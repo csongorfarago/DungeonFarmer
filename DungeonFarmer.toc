@@ -1,8 +1,8 @@
 ## Interface: 120007, 120100
 ## Title: DungeonFarmer
 ## Notes: Tracks rolling dungeon lockouts on the minimap difficulty tooltip, with optional Titan Panel support.
-## Author: Csongor Farago using OpenAI GPT-5 (Codex)
-## Version: 1.0.0
+## Author: Csongor Farago
+## Version: 1.0.1
 ## SavedVariables: DungeonFarmerDB
 ## OptionalDeps: Titan
 

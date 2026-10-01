@@ -68,6 +68,16 @@ The main tuning values live at the top of [DungeonFarmer.lua](./DungeonFarmer.lu
 - Reset detection currently relies on the `ResetInstances()` API hook plus reset-related UI/system messages. Non-standard reset flows may still need additional tuning.
 - Titan support is optional and only activates when Titan Panel is available.
 
+## Changelog
+
+### 1.0.1
+
+- Added run time tracking.
+
+### 1.0.0
+
+- Initial release.
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).

@@ -4,7 +4,7 @@ local addonName, addon = ...
 local ADDON_TITLE = "DungeonFarmer"
 local ADDON_AUTHOR = "Csongor Farago"
 local ADDON_MODEL = "OpenAI GPT-5 (Codex)"
-local ADDON_VERSION = "1.0.0"
+local ADDON_VERSION = "1.0.1"
 
 -- User-configurable settings
 local WINDOW_SECONDS = 3600
