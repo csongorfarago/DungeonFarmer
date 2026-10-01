@@ -16,7 +16,7 @@ local RED_COLOR_COUNT_THRESHOLD = 10
 
 -- Internal constants
 local NO_LOCKOUTS_TEXT = "No active hourly dungeon lockouts."
-local CHAT_PREFIX = "|cffffd100DungeonFarmer:|r"
+local CHAT_PREFIX = "|cffffd100[DungeonFarmer]|r"
 local TOOLTIP_REFRESH_SECONDS = 1
 local RESET_DEBOUNCE_SECONDS = 2
 local ACTIVE_STATUS_TEXT = "A"
@@ -33,6 +33,10 @@ addon.TITLE = ADDON_TITLE
 addon.AUTHOR = ADDON_AUTHOR
 addon.MODEL = ADDON_MODEL
 addon.VERSION = ADDON_VERSION
+
+local function PrintAddonMessage(message)
+    print(string.format("%s %s", CHAT_PREFIX, message))
+end
 
 -- Player identity helpers
 local function BuildCharacterKey(characterName, realmName)
@@ -153,6 +157,12 @@ local function NormalizeEntry(entry)
     entry.time = timestamp
     entry.entryTime = tonumber(entry.entryTime) or timestamp
     entry.exitTime = entry.exitTime and tonumber(entry.exitTime) or nil
+    entry.visitEntryTime = tonumber(entry.visitEntryTime) or entry.entryTime
+    if not tonumber(entry.timeInsideSeconds) then
+        -- Older closed rows only retain the most recent visit's timing.
+        entry.timeInsideSeconds = entry.exitTime and math.max(0, entry.exitTime - entry.visitEntryTime) or 0
+    end
+    entry.timeInsideSeconds = math.max(0, tonumber(entry.timeInsideSeconds) or 0)
     entry.lastSeenTime = tonumber(entry.lastSeenTime) or tonumber(entry.exitTime) or entry.entryTime
     entry.resetSequence = tonumber(entry.resetSequence) or 0
     return entry
@@ -238,6 +248,8 @@ local function CreateDungeonEntry(database, details, characterName, realmName, d
     local entry = {
         time = now,
         entryTime = now,
+        visitEntryTime = now,
+        timeInsideSeconds = 0,
         exitTime = nil,
         lastSeenTime = now,
         characterName = characterName,
@@ -277,7 +289,9 @@ local function RestoreDungeonEntry(details)
 end
 
 local function RecordDungeonEntry(details)
-    return EnsureDungeonEntry(details, true)
+    local entry = EnsureDungeonEntry(details, true)
+    entry.visitEntryTime = GetNow()
+    return entry
 end
 
 local function FindMostRecentOpenEntry(characterName, realmName)
@@ -294,6 +308,25 @@ local function FindMostRecentOpenEntry(characterName, realmName)
     end
 end
 
+local function FormatRunDuration(elapsed)
+    elapsed = math.max(0, math.floor(elapsed))
+    local parts = {}
+    local units = {
+        { math.floor(elapsed / 3600), "hour" },
+        { math.floor(elapsed / 60) % 60, "minute" },
+        { elapsed % 60, "second" },
+    }
+
+    for _, unit in ipairs(units) do
+        local value, label = unit[1], unit[2]
+        if value > 0 then
+            parts[#parts + 1] = string.format("%d %s%s", value, label, value == 1 and "" or "s")
+        end
+    end
+
+    return #parts > 0 and table.concat(parts, " ") or "less than 1 second"
+end
+
 local function RecordDungeonExit()
     local characterName, realmName = GetPlayerIdentity()
     local now = GetNow()
@@ -304,6 +337,17 @@ local function RecordDungeonExit()
 
     entry.exitTime = now
     entry.lastSeenTime = now
+
+    local startedAt = tonumber(entry.visitEntryTime) or GetEntryTime(entry)
+    if startedAt then
+        local elapsed = (tonumber(entry.timeInsideSeconds) or 0) + math.max(0, now - startedAt)
+        entry.timeInsideSeconds = elapsed
+        PrintAddonMessage(string.format(
+            "%s — you've clocked %s this run.",
+            entry.instanceName or "Unknown",
+            FormatRunDuration(elapsed)
+        ))
+    end
 end
 
 local function IsStartupWorldEntry(isInitialLogin, isReloadingUi)
@@ -526,10 +570,6 @@ addon.GetDisplayInfo = GetDisplayInfo
 addon.GetDisplayInfoFromSnapshot = GetDisplayInfoFromSnapshot
 
 -- Chat output and slash commands
-local function PrintAddonMessage(message)
-    print(string.format("%s %s", CHAT_PREFIX, message))
-end
-
 local function PrintPlainMessage(message)
     print(message)
 end

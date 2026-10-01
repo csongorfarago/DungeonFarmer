@@ -13,6 +13,7 @@ It adds a color-coded `n/10` count to the minimap difficulty tooltip, keeps a re
 - Shows the remaining time until the next lockout falls off
 - Prints status to chat with `/df` or `/dungeonfarmer`
 - Prints the retained run log with `/dflog`
+- Prints your total time inside the current run to your own chat when you leave a dungeon
 - Adds optional Titan Panel support with the same count and countdown tooltip
 
 ## Commands
@@ -36,6 +37,7 @@ Copy the `DungeonFarmer` folder into:
 
 - Each stored run records entry time, latest exit time, realm, character, instance name, instance ID, and reset sequence.
 - Re-entering the same unreset dungeon updates the same stored run instead of creating a duplicate row.
+- Time spent inside the same run adds up across visits until a reset, including time spent dead or idle inside. Time outside between visits is excluded. Leaving prints a private message such as "[DungeonFarmer] The Botanica — you've clocked 4 minutes 32 seconds this run." Durations show only nonzero hours, minutes, and seconds. The timer survives `/reload` and relogging inside the dungeon.
 - Reloading or logging in inside a dungeon resumes an already-open row. If the latest matching row is already closed, the addon creates a new row.
 - Active lockout timing uses `exitTime + 60 minutes` when an exit is known.
 - If a run is still open and has no exit time yet, the addon falls back to `entryTime + 60 minutes`.
