@@ -103,6 +103,7 @@ local function CreateTitanPlugin()
         return
     end
 
+    -- The template queues registration on load; Titan reads the registry later.
     titanFrame = CreateFrame("Button", TITAN_PLUGIN_FRAME_NAME, UIParent, "TitanPanelComboTemplate")
     titanFrame.registry = {
         id = TITAN_PLUGIN_ID,
@@ -124,7 +125,6 @@ local function CreateTitanPlugin()
         menuTextFunction = TitanPanelRightClickMenu_PrepareDungeonFarmerMenu,
     }
 
-    TitanPanelButton_OnLoad(titanFrame)
     titanFrame:SetScript("OnShow", function(self)
         TitanPanelButton_OnShow(self)
     end)
